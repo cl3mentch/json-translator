@@ -23,6 +23,7 @@ export async function plaintranslate(
     word: ignored_str,
     double_brackets_map,
     single_brackets_map,
+    angle_brackets_map,
   } = ignorer.map(str);
 
   // step: translate in try-catch to keep continuity
@@ -38,7 +39,8 @@ export async function plaintranslate(
     translatedStr = ignorer.unMap(
       translatedStr,
       double_brackets_map,
-      single_brackets_map
+      single_brackets_map,
+      angle_brackets_map
     );
 
     global.totalTranslated = global.totalTranslated + 1;

@@ -4,6 +4,7 @@ export function map(
   word: string;
   double_brackets_map: { [key: string]: string };
   single_brackets_map: { [key: string]: string };
+  angle_brackets_map: { [key: string]: string };
 } {
   // encode urls if exists in the str
   str = urlEncoder(str);
@@ -12,26 +13,35 @@ export function map(
     map: double_brackets_map,
     word: initial_ignored_word,
   } = mapByDoubleBracket(str);
-  let { map: single_brackets_map, word: ignored_word } = mapBySingleBracket(
-    initial_ignored_word
+
+  let {
+    map: single_brackets_map,
+    word: initial_angle_ignored_word,
+  } = mapBySingleBracket(initial_ignored_word);
+
+  let { map: angle_brackets_map, word: ignored_word } = mapByAngleBracket(
+    initial_angle_ignored_word
   );
 
   return {
     word: ignored_word,
     double_brackets_map,
-    single_brackets_map: single_brackets_map,
+    single_brackets_map,
+    angle_brackets_map,
   };
 }
 
 export function unMap(
   str: string,
   double_brackets_map: object,
-  single_brackets_map: object
+  single_brackets_map: object,
+  angle_brackets_map: object
 ): string {
-  let word = unmapBySingleBracket(str, single_brackets_map);
+  let word = unmapByAngleBracket(str, angle_brackets_map);
+  word = unmapBySingleBracket(word, single_brackets_map);
   word = unmapByDoubleBracket(word, double_brackets_map);
 
-  // decode urls if exists in the str
+  // Decode URLs if they exist in the string
   word = urlDecoder(word);
 
   return word;
@@ -57,6 +67,16 @@ function unmapByDoubleBracket(str: string, map: object): string {
   return unmapIgnoredValues(str, map, '{{', '}}', '{', '}');
 }
 
+function mapByAngleBracket(
+  str: string
+): { word: string; map: { [key: string]: string } } {
+  return mapIgnoredValues(str, '<', '>', '<', '>');
+}
+
+function unmapByAngleBracket(str: string, map: object): string {
+  return unmapIgnoredValues(str, map, '<', '>', '<', '>');
+}
+
 function mapIgnoredValues(
   str: string,
   start: string,
@@ -72,8 +92,7 @@ function mapIgnoredValues(
   let new_str = str.replace(regex, function(word) {
     word = word.substring(start.length, word.length - end.length);
 
-    // const key = "*".repeat(counter)
-    const key = counter;
+    const key = counter.toString();
 
     map[`${key}`] = word;
 
