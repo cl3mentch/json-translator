@@ -34,10 +34,9 @@ export function map(
 export function unMap(
   str: string,
   double_brackets_map: object,
-  single_brackets_map: object,
-  angle_brackets_map: object
+  single_brackets_map: object
 ): string {
-  let word = unmapByAngleBracket(str, angle_brackets_map);
+  let word = unmapByAngleBracket(str);
   word = unmapBySingleBracket(word, single_brackets_map);
   word = unmapByDoubleBracket(word, double_brackets_map);
 
@@ -70,11 +69,20 @@ function unmapByDoubleBracket(str: string, map: object): string {
 function mapByAngleBracket(
   str: string
 ): { word: string; map: { [key: string]: string } } {
-  return mapIgnoredValues(str, '<', '>', '<', '>');
+  // Skip HTML tags completely
+  const regex = /<\/?[\w\s="/.':;#-\/]+>/g;
+  const map: { [key: string]: string } = {};
+
+  // Replace non-tag content but keep HTML tags untouched
+  const new_str = str.replace(regex, match => {
+    return match; // Preserve tags as they are
+  });
+
+  return { word: new_str, map };
 }
 
-function unmapByAngleBracket(str: string, map: object): string {
-  return unmapIgnoredValues(str, map, '<', '>', '<', '>');
+function unmapByAngleBracket(str: string): string {
+  return str; // No mapping was done, so return unchanged
 }
 
 function mapIgnoredValues(
